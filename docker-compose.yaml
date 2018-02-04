@@ -1,0 +1,39 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:1.13-alpine
+    container_name: demo-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+  nodejs:
+    build:
+      context: .
+    container_name: demo-backend
+    depends_on:
+      - couchbase
+    volumes:
+      - ./app:/usr/src/app
+      - ./dist:/usr/src/dist
+    ports:
+      - "8080:8080"
+    environment:
+      DEBUG: demo*
+  couchbase:
+    image: bentonam/couchbase-docker:enterprise-5.0.1
+    container_name: demo-db
+    ports:
+      - "8091-8094:8091-8094"
+      - "11210-11211:11210-11211"
+    environment:
+      NODE_TYPE: DEFAULT
+      CLUSTER_USERNAME: Administrator
+      CLUSTER_PASSWORD: password
+      SERVICES: data,index,query
+      CLUSTER_RAMSIZE: 500
+      BUCKET: demo
+      ENABLE_FLUSH: 1
+      RBAC_USERNAME: demo_user
+      RBAC_PASSWORD: password
+      RBAC_ROLES: admin
