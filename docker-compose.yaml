@@ -1,12 +1,16 @@
-version: '3'
+version: '3.4'
 services:
   nginx:
     image: nginx:1.13-alpine
     container_name: demo-frontend
+    depends_on:
+      - nodejs
     ports:
-      - "80:80"
+      - 80:80
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
+      - ./docker/nginx/mime.types:/etc/nginx/mime.types:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
   nodejs:
     build:
       context: .
@@ -15,17 +19,16 @@ services:
       - couchbase
     volumes:
       - ./app:/usr/src/app
-      - ./dist:/usr/src/dist
     ports:
-      - "8080:8080"
+      - 8080:8080
     environment:
       DEBUG: demo*
   couchbase:
     image: bentonam/couchbase-docker:enterprise-5.0.1
     container_name: demo-db
     ports:
-      - "8091-8094:8091-8094"
-      - "11210-11211:11210-11211"
+      - 8091-8094:8091-8094
+      - 11210-11211:11210-11211
     environment:
       NODE_TYPE: DEFAULT
       CLUSTER_USERNAME: Administrator

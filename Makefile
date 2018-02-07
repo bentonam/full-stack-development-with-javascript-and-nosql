@@ -37,7 +37,10 @@ watch:
 
 # start the api and web servers
 start:
-	@nodemon -e js,pug -w dist dist/index.js;
+	@nodemon -e js -w dist dist/index.js;
+
+start-watch:
+	@babel app --source-maps --out-dir dist & make start
 
 docker-build:
 	@docker-compose up -d --build

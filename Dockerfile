@@ -1,4 +1,4 @@
-FROM node:9.4.0
+FROM node:9.5
 
 # File Author / Maintainer
 MAINTAINER Aaron Benton
@@ -6,6 +6,7 @@ MAINTAINER Aaron Benton
 RUN apt-get install make
 
 # Install app dependencies
+COPY .npmrc /usr/src/.npmrc
 COPY package.json /usr/src/package.json
 COPY Makefile /usr/src/Makefile
 RUN cd /usr/src; make install
@@ -20,4 +21,4 @@ ENV PATH=/usr/src/node_modules/.bin:$PATH
 
 EXPOSE  8080
 
-CMD ["make", "start"]
+CMD ["make", "start-watch"]
