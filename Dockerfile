@@ -11,7 +11,7 @@ COPY package.json /usr/src/package.json
 COPY Makefile /usr/src/Makefile
 RUN cd /usr/src; make install
 
-# Bundle app source
+# copy the src
 COPY . /usr/src
 
 WORKDIR /usr/src
@@ -21,4 +21,4 @@ ENV PATH=/usr/src/node_modules/.bin:$PATH
 
 EXPOSE  8080
 
-CMD ["make", "start-watch"]
+CMD ["make", "run-watch"]

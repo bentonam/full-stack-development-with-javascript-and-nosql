@@ -8,6 +8,7 @@
     "accessor-pairs": ["error", { "getWithoutSet": true }],
     "complexity": ["error", 11],
     "no-param-reassign": "off",
+    "no-underscore-dangle": "off",
     "no-unmodified-loop-condition": "error",
     "no-useless-call": "error",
     "no-warning-comments": [

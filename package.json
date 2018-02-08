@@ -3,10 +3,12 @@
   "author": "Aaron Benton <bentonam@gmail.com> (https://github.com/bentonam)",
   "contributors": [],
   "version": "0.1.0",
-  "description": "",
+  "description": "Full Stack Development with JavaScript and NoSQL",
   "scripts": {
     "build": "make install && make build",
-    "start": "make start"
+    "start": "make run",
+    "run": "make run",
+    "watch": "make watch"
   },
   "main": "dist/index.js",
   "repository": {
@@ -26,6 +28,7 @@
     "bluebird": "3.5.1",
     "couchbase": "2.4.3",
     "debug": "3.1.0",
+    "dotenv": "5.0.0",
     "koa": "2.4.1",
     "koa-body": "2.5.0",
     "koa-router": "7.4.0"
@@ -39,7 +42,6 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-register": "~6.26.0",
-    "chalk": "~2.3.0",
     "eslint": "~4.15.0",
     "eslint-config-airbnb-base": "~12.1.0",
     "eslint-plugin-fat-arrow-same-line": "~0.1.0",

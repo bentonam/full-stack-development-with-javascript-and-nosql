@@ -2,27 +2,17 @@
 MAKEFLAGS = -j1
 PATH := ./node_modules/.bin:$(PATH)
 SHELL := /bin/bash
-.PHONY: all install clean deep-clean reinstall setup build compile build-source-maps compile-source-maps watch start
+.PHONY: install clean build compile watch run
 
-all: build test
-
-# normal npm install + install production dependencies only in the dist/node_modules directory
+# install all the things
 install:
 	@npm install
 
-# remove the build and log folders, the dist directory is not removed because this will break the docker container if it is removed since
-# it is virtually linked
+# remove the contents but leave the dist directory is not removed because
+# this will break the docker container if it is removed since it is
+# virtually linked
 clean:
 	@rm -rf logs dist/*
-
-# remove all files that are ignored by git
-deep-clean:
-	@make clean
-	@rm -rf node_modules/ dist/ npm-debug.log yarn-error.log
-
-# reinstall the node_modules and start with a fresh node build
-reinstall setup:
-	@make deep-clean install
 
 # build the source files
 build compile:
@@ -35,24 +25,23 @@ watch:
 	@make clean
 	@babel app --source-maps --out-dir dist --watch
 
-# start the api and web servers
-start:
-	@nodemon -e js -w dist dist/index.js;
+# use nodemon to start the node process
+run:
+	@nodemon -e js -w dist dist/server.js;
 
-start-watch:
-	@babel app --source-maps --out-dir dist & make start
+# used to watch and start the application, primairly used in our container
+run-watch:
+	@babel app --source-maps --out-dir dist & make run
 
+# docker stuff because why not
 docker-build:
 	@docker-compose up -d --build
 
-docker-destroy:
+docker-down:
 	@docker-compose down -v
 
-docker-down:
-	@docker-compose down
-
 docker-rebuild:
-	@make docker-destroy docker-build
+	@make docker-down docker-build
 
 docker-restart:
 	@make docker-down docker-up
