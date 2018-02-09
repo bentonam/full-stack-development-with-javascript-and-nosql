@@ -1,8 +1,0 @@
-{
-  "presets": ["env"],
-  "plugins": [
-    "external-helpers",
-    "transform-runtime",
-    "transform-async-to-generator"
-  ]
-}
