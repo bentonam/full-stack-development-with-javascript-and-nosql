@@ -17,20 +17,21 @@ router.post(
     const bucket = await connect()
     // get the values from request to save
     const {
-      firstname,
-      lastname,
+      first_name,
+      last_name,
     } = ctx.request.body
-    const id = uuid() // generate id for person
+    const person_id = uuid() // generate id
+    debug('  person_id: %s', person_id)
     const doc = {
-      id,
-      type: 'person',
-      firstname,
-      lastname,
+      person_id,
+      doc_type: 'person',
+      first_name,
+      last_name,
       timestsamp: new Date()
         .getTime(),
     }
     // write the document to couchbase
-    await bucket.insertAsync(id, doc)
+    await bucket.insertAsync(person_id, doc)
     ctx.body = doc
     ctx.status = 201
   },
@@ -47,17 +48,18 @@ router.post(
       city,
       state,
     } = ctx.request.body
-    const id = uuid() // generate id for person
+    const address_id = uuid() // generate id for address
+    debug('  address_id: %s', address_id)
     const doc = {
-      id,
-      type: 'address',
+      address_id,
+      doc_type: 'address',
       city,
       state,
       timestsamp: new Date()
         .getTime(),
     }
     // write the document to couchbase
-    await bucket.insertAsync(id, doc)
+    await bucket.insertAsync(address_id, doc)
     ctx.body = doc
     ctx.status = 201
   },
@@ -69,30 +71,45 @@ router.get(
   async (ctx) => {
     const bucket = await connect()
     const statement = N1qlQuery.fromString(`
-      SELECT META(address).id, address.*
+      SELECT address.*
       FROM demo AS address
-      WHERE address.type = 'address'
+      WHERE address.doc_type = 'address'
+      ORDER BY address.city ASC, address.state ASC
     `)
     ctx.body = await bucket.queryAsync(statement)
     ctx.status = 200
   },
 )
 
-// get all the people
+// get all the people and their addresses
 router.get(
   '/people',
   async (ctx) => {
     const bucket = await connect()
     const statement = N1qlQuery.fromString(`
-      SELECT META(person).id, person.firstname, person.lastname,
-        (
-          SELECT address.city, address.state
-          FROM demo AS address
-          USE KEYS person.addresses
-        ) AS addresses
+      SELECT person.person_id, person.first_name, person.last_name,
+        ARRAY {
+          "address_id": addr.address_id,
+          "city" : addr.city,
+          "state": addr.state
+        } FOR addr IN addresses END AS addresses
       FROM demo AS person
-      WHERE person.type = 'person'
+      LEFT OUTER NEST demo AS addresses ON KEYS person.addresses
+      WHERE person.doc_type = 'person'
+      ORDER BY person.first_name ASC, person.last_name ASC
     `)
+    // these queries achieve the same result
+    // const statement = N1qlQuery.fromString(`
+    //   SELECT person.person_id, person.first_name, person.last_name,
+    //     (
+    //       SELECT address.city, address.state
+    //       FROM demo AS address
+    //       USE KEYS person.addresses
+    //     ) AS addresses
+    //   FROM demo AS person
+    //   WHERE person.doc_type = 'person'
+    //   ORDER BY person.first_name ASC, person.last_name ASC
+    // `)
     ctx.body = await bucket.queryAsync(statement)
     ctx.status = 200
   },
@@ -100,15 +117,16 @@ router.get(
 
 // add an address to a person
 router.put(
-  '/person/address/:personid',
+  '/person/address/:person_id',
   async (ctx) => {
-    debug('  payload: %O', ctx.request.body)
     const bucket = await connect()
-    const { personid } = ctx.params
-    const { addressid } = ctx.request.body
+    const { person_id } = ctx.params
+    debug('  person_id: %s', person_id)
+    const { address_id } = ctx.request.body
+    debug('  address_id: %s', address_id)
     await new Promise((resolve, reject) => {
-      bucket.mutateIn(personid)
-        .arrayAppend('addresses', addressid, true)
+      bucket.mutateIn(person_id)
+        .arrayAppend('addresses', address_id, true)
         .execute((error, result) => {
           if (error) {
             reject(error)
@@ -117,7 +135,7 @@ router.put(
           resolve(result)
         })
     })
-    ctx.body = await bucket.getAsync(personid)
+    ctx.body = await bucket.getAsync(person_id)
       .then(({ value }) => value)
     ctx.status = 200
   },
@@ -125,12 +143,12 @@ router.put(
 
 // retrieve a person
 router.get(
-  '/person/:id',
+  '/person/:person_id',
   async (ctx) => {
     const bucket = await connect()
-    const { id } = ctx.params
-    debug('  id: %s', id)
-    ctx.body = await bucket.getAsync(id)
+    const { person_id } = ctx.params
+    debug('  person_id: %s', person_id)
+    ctx.body = await bucket.getAsync(person_id)
       .then(({ value }) => value)
     ctx.status = 200
   },
@@ -138,43 +156,16 @@ router.get(
 
 // retrieve an address
 router.get(
-  '/address/:id',
+  '/address/:address_id',
   async (ctx) => {
     const bucket = await connect()
-    const { id } = ctx.params
-    debug('  id: %s', id)
-    ctx.body = await bucket.getAsync(id)
+    const { address_id } = ctx.params
+    debug('  address_id: %s', address_id)
+    ctx.body = await bucket.getAsync(address_id)
       .then(({ value }) => value)
     ctx.status = 200
   },
 )
 
-// delete a user
-router.delete(
-  '/person/:id',
-  async (ctx) => {
-    const bucket = await connect()
-    const doc_id = `person::${ctx.params.id}`
-    debug('  doc_id: %s', doc_id)
-    await bucket.removeAsync(doc_id)
-    ctx.status = 204
-  },
-)
-
-// get all the people
-router.get(
-  '/people',
-  async (ctx) => {
-    const bucket = await connect()
-    const statement = N1qlQuery.fromString(`
-      SELECT id, first_name, last_name, email
-      FROM demo
-      WHERE type = 'person'
-      ORDER BY first_name, last_name
-    `)
-    ctx.body = await bucket.queryAsync(statement)
-    ctx.status = 200
-  },
-)
 
 export default router

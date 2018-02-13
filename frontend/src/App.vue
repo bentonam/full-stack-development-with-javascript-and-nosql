@@ -6,12 +6,12 @@
           <div class="well">
             <form>
               <div class="form-group">
-                <label for="firstname">First Name</label>
-                <input type="text" v-model="input.person.firstname" class="form-control" id="firstname" placeholder="First Name">
+                <label for="first_name">First Name</label>
+                <input type="text" v-model="input.person.first_name" class="form-control" id="first_name" placeholder="First Name">
               </div>
               <div class="form-group">
-                <label for="lastname">Last Name</label>
-                <input type="text" v-model="input.person.lastname" class="form-control" id="lastname" placeholder="Last Name">
+                <label for="last_name">Last Name</label>
+                <input type="text" v-model="input.person.last_name" class="form-control" id="last_name" placeholder="Last Name">
               </div>
               <button type="button" v-on:click="createPerson()" class="btn btn-default">Save</button>
             </form>
@@ -37,16 +37,16 @@
         <div class="col-md-12">
           <ul class="list-group">
             <li v-for="(person, index) in people" class="list-group-item">
-              {{ person.firstname }} {{ person.lastname }} -
+              {{ person.first_name }} {{ person.last_name }} -
               <span v-for="(address, index) in person.addresses">
                 {{ address.city }}, {{ address.state }} /
               </span>
               <p>
                 <form>
                   <div v-for="(address, index) in addresses">
-                    <input type="radio" name="addressid" v-bind:value="address.id" v-model="input.addressid"> {{ address.city }}, {{ address.state }}
+                    <input type="radio" name="address_id" v-bind:value="address.address_id" v-model="input.address_id"> {{ address.city }}, {{ address.state }}
                   </div>
-                  <button type="button" v-on:click="linkAddress(person.id)" class="btn btn-default">Save</button>
+                  <button type="button" v-on:click="linkAddress(person.person_id)" class="btn btn-default">Save</button>
                 </form>
               </p>
             </li>
@@ -68,64 +68,83 @@ export default {
         person: {
           first_name: '',
           last_name: '',
-          email: '',
         },
         address: {
           city: '',
           state: '',
         },
-        addressid: '',
+        address_id: '',
       },
       people: [],
       addresses: [],
-    };
+    }
   },
   mounted() {
-    axios({ method: 'GET', url: '/api/people' }).then((result) => {
-      this.people = result.data;
-    });
-    axios({ method: 'GET', url: '/api/addresses' }).then((result) => {
-      this.addresses = result.data;
-    });
+    axios({ method: 'GET', url: '/api/people' })
+      .then((result) => {
+        this.people = result.data
+      });
+    axios({ method: 'GET', url: '/api/addresses' })
+      .then((result) => {
+        this.addresses = result.data
+      });
   },
   methods: {
     createPerson() {
-      if (this.input.person.firstname != '' && this.input.person.lastname != '') {
-        axios({ method: 'POST', url: '/api/person', data: this.input.person, headers: { 'content-type': 'application/json' } }).then((result) => {
-          this.people.push(result.data);
-          this.input.person.firstname = '';
-          this.input.person.lastname = '';
-        });
+      if (this.input.person.first_name && this.input.person.last_name) {
+        axios({
+          method: 'POST',
+          url: '/api/person',
+          data: this.input.person,
+          headers: { 'content-type': 'application/json' },
+        })
+          .then((result) => {
+            this.people.push(result.data)
+            this.input.person.first_name = ''
+            this.input.person.last_name = ''
+          });
       }
     },
     createAddress() {
-      if (this.input.address.city != '' && this.input.address.state != '') {
-        axios({ method: 'POST', url: '/api/address', data: this.input.address, headers: { 'content-type': 'application/json' } }).then((result) => {
-          this.addresses.push(result.data);
-          this.input.address.city = '';
-          this.input.address.state = '';
-        });
+      if (this.input.address.city && this.input.address.state) {
+        axios({
+          method: 'POST',
+          url: '/api/address',
+          data: this.input.address,
+          headers: { 'content-type': 'application/json' },
+        })
+          .then((result) => {
+            this.addresses.push(result.data)
+            this.input.address.city = ''
+            this.input.address.state = ''
+          });
       }
     },
-    linkAddress(personid) {
-      if (this.input.addressid != undefined && personid != '') {
+    linkAddress(person_id) {
+      if (this.input.address_id && person_id) {
         axios({
           method: 'PUT',
-          url: `/api/person/address/${personid}`,
-          data: { addressid: this.input.addressid },
-          headers: { 'content-type': 'application/json' } }).then((result) => {
-          for (let i = 0; i < this.people.length; i++) {
-            if (this.people[i].id == personid) {
-              if (this.people[i].addresses == undefined) {
-                this.people[i].addresses = [];
+          url: `/api/person/address/${person_id}`,
+          data: { address_id: this.input.address_id },
+          headers: { 'content-type': 'application/json' },
+        })
+          .then((result) => {
+            for (let i = 0; i < this.people.length; i++) {
+              if (this.people[i].person_id === person_id) {
+                if (this.people[i].addresses === undefined) {
+                  this.people[i].addresses = []
+                }
+                axios({
+                  method: 'GET',
+                  url: `/api/address/${this.input.address_id}`,
+                })
+                  .then((result) => {
+                    this.people[i].addresses.push(result.data)
+                    this.input.address_id = ''
+                  });
               }
-              axios({ method: 'GET', url: `/api/address/${this.input.addressid}` }).then((result) => {
-                this.people[i].addresses.push(result.data);
-                this.input.addressid = '';
-              });
             }
-          }
-        });
+          });
       }
     },
   },
