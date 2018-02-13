@@ -27,7 +27,7 @@ router.post(
       doc_type: 'person',
       first_name,
       last_name,
-      timestsamp: new Date()
+      timestamp: new Date()
         .getTime(),
     }
     // write the document to couchbase
@@ -55,7 +55,7 @@ router.post(
       doc_type: 'address',
       city,
       state,
-      timestsamp: new Date()
+      timestamp: new Date()
         .getTime(),
     }
     // write the document to couchbase
