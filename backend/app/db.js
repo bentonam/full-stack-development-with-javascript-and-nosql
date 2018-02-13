@@ -24,6 +24,17 @@ export default async function connect () {
     // connect to the bucket and add promise support
     bucket = await cluster.openBucket(process.env.COUCHBASE_BUCKET)
     bucket = promisifyAll(bucket)
+    // create a primary index for the demo ONLY, don't do this in production
+    // *** SERIOUSLY DON'T DO THIS ***
+    const statement = couchbase.N1qlQuery.fromString(`
+      CREATE PRIMARY INDEX ON demo
+    `)
+    // re-read Line 28 just incase
+    try {
+      await bucket.queryAsync(statement)
+    } catch (err) {
+      // ignore errors around the index already existing
+    }
   }
   return bucket
 }
