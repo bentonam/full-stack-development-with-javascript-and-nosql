@@ -7,13 +7,23 @@
             <form>
               <div class="form-group">
                 <label for="first_name">First Name</label>
-                <input type="text" v-model="input.person.first_name" class="form-control" id="first_name" placeholder="First Name">
+                <input type="text"
+                  v-model="input.person.first_name"
+                  class="form-control"
+                  id="first_name"
+                  placeholder="First Name">
               </div>
               <div class="form-group">
                 <label for="last_name">Last Name</label>
-                <input type="text" v-model="input.person.last_name" class="form-control" id="last_name" placeholder="Last Name">
+                <input type="text"
+                  v-model="input.person.last_name"
+                  class="form-control"
+                  id="last_name"
+                  placeholder="Last Name">
               </div>
-              <button type="button" v-on:click="createPerson()" class="btn btn-default">Save</button>
+              <button type="button" v-on:click="createPerson()" class="btn btn-default">
+                Save
+              </button>
             </form>
           </div>
         </div>
@@ -22,13 +32,23 @@
             <form>
               <div class="form-group">
                 <label for="city">City</label>
-                <input type="text" v-model="input.address.city" class="form-control" id="city" placeholder="City">
+                <input type="text"
+                  v-model="input.address.city"
+                  class="form-control"
+                  id="city"
+                  placeholder="City">
               </div>
               <div class="form-group">
                 <label for="state">State</label>
-                <input type="text" v-model="input.address.state" class="form-control" id="state" placeholder="State">
+                <input type="text"
+                  v-model="input.address.state"
+                  class="form-control"
+                  id="state"
+                  placeholder="State">
               </div>
-              <button type="button" v-on:click="createAddress()" class="btn btn-default">Save</button>
+              <button type="button" v-on:click="createAddress()" class="btn btn-default">
+                Save
+              </button>
             </form>
           </div>
         </div>
@@ -44,9 +64,14 @@
               <p>
                 <form>
                   <div v-for="(address, index) in addresses">
-                    <input type="radio" name="address_id" v-bind:value="address.address_id" v-model="input.address_id"> {{ address.city }}, {{ address.state }}
+                    <input type="radio"
+                      name="address_id"
+                      v-bind:value="address.address_id"
+                      v-model="input.address_id"> {{ address.city }}, {{ address.state }}
                   </div>
-                  <button type="button" v-on:click="linkAddress(person.person_id)" class="btn btn-default">Save</button>
+                  <button type="button" v-on:click="linkAddress(person.person_id)" class="btn btn-default">
+                    Save
+                  </button>
                 </form>
               </p>
             </li>
